@@ -1,51 +1,48 @@
---sp para registrar nueva tienda 
-create or alter procedure sp_registrarNuevaTienda
-	@Correo   nvarchar(100),
-	@Password  nvarchar(200),
-	@Nombre nvarchar(50),
-	@NombreJuridico nvarchar(50),
-	@NIT int,
-	@Teloefono int,
-	@CategoriaID int
+USE TkMarketplace
+GO
 
-as 
-begin 
-	set nocount on;
+--creacion del sp agragar clientes
+create or alter procedure sp_RegistrarNuevosClientes 
+	@Correo NVARCHAR(100),
+	@Password NVARCHAR(200),
+	@Nombre NVARCHAR(50),
+	@Apellido NVARCHAR(50),
+	@Telefono INT 
+AS 
+BEGIN 
+	SET NOCOUNT ON;
+	begin try -- AGREGADO
 
-	begin try 
-	--verificar si ya existe una tienda con este correo
-		if exists (select 1 from USERS where Correo = @Correo and Tipo = 'Tienda')
+		IF EXISTS(SELECT 1 FROM USERS WHERE Correo = @Correo AND Tipo = 'Cliente')
 		begin 
-			throw 50001, 'Ya tienes una cuenta registrada ', 1;
-		end
+			throw 50001, 'Ya tienes una cuenta registrada' , 1;
+		end 
 
-	begin transaction;
+		begin transaction;
 
-	--insertamos en users
-	insert into USERS (Correo, Password, Tipo, Estado)
-	values(@Correo, @Password, 'Tienda', 'Activo');
+		-- Insertamos al nuevo cliente '
+		insert into USERS(Correo, Password, Tipo, Estado)
+		values(@Correo, @Password, 'Cliente', 'Activo')
 
-	--obtenemos el nuevo user id 
-	declare @UserID int = scope_identity();
+		-- no hacia commit en la tabla CLIENTES, entonces AGREGUE el insert:
+		DECLARE @UserID INT = SCOPE_IDENTITY();
+		insert into CLIENTES(UserID, Nombre, Apellido, Telefono)
+		values (@UserID, @Nombre, @Apellido, @Telefono);
+		-- AQUI TERMINA LO QUE AGREGUE
 
-	--insertamos en tiendas 
-	insert into TIENDAS(UserID, Nombre, NombreJuridico, NIT, Telefono, CategoriaID)
-	values(@UserID, @Nombre, @NombreJuridico, @NIT, @Teloefono, @CategoriaID);
+		commit transaction;
 
-	commit transaction;
+		select 'Cliente registrado existosamente. ' as Mnesaje, 
+		@UserID as UserId; -- CAMBIADO : ClienteID -> UserID
 
-	select 'Tienda registrada exitosamente ' as Mensaje, @UserID as UserId;
+	end try 
+	begin catch 
+		if XACT_STATE() <> 0
+		rollback transaction;
 
-END TRY 
-BEGIN CATCH 
-	IF XACT_STATE() <> 0
-		ROLLBACK TRANSACTION;
-
-	DECLARE @ErrorMessage nvarchar(4000) = Error_Message();
-	declare @ErrorState int = Error_State();
-	throw 50000, @ErrorMessage, @ErrorState;
-end catch
+		declare @ErrorMessage nvarchar(4000) = Error_Message();
+		declare @ErrorState int = ERROR_STATE();
+		THROW 50000, @ErrorMessage, @ErrorState;
+	end catch 
 end;
 go
-
-	
