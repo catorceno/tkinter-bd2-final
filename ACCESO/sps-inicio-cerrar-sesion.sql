@@ -1,5 +1,9 @@
+USE TkMarketplace
+GO
+select * from USERS
+select * from CLIENTES
 -- 3.Inicio Sesión
-ALTER PROCEDURE sp_inicioSesion
+CREATE PROCEDURE sp_inicioSesion
 @Correo   NVARCHAR(100),
 @Password NVARCHAR(200)
 AS
@@ -36,7 +40,7 @@ END;
 GO
 
 -- 4.Cerrar Sesión
-ALTER PROCEDURE sp_cerrarSesion
+CREATE PROCEDURE sp_cerrarSesion
 @UserID INT
 AS
 BEGIN

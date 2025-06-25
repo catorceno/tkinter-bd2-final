@@ -48,4 +48,8 @@ BEGIN CATCH
 end catch
 end;
 go
+<<<<<<< HEAD
 	
+=======
+	
+>>>>>>> bacf8e9 (agregue insert clientes en registrarNuevosClientes)
