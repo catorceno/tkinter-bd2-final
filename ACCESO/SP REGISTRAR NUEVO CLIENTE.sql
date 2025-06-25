@@ -1,3 +1,6 @@
+USE TkMarketplace
+GO
+
 --creacion del sp agragar clientes
 create or alter procedure sp_RegistrarNuevosClientes 
 	@Correo NVARCHAR(100),
@@ -8,24 +11,29 @@ create or alter procedure sp_RegistrarNuevosClientes
 AS 
 BEGIN 
 	SET NOCOUNT ON;
+	begin try -- AGREGADO
 
-	--1. VERIFICACION SI YA EXISTE ESE CORREO
-	IF EXISTS(SELECT 1 FROM USERS WHERE Correo = @Correo AND Tipo = 'Cliente')
-	begin 
-		throw 50001, 'Ya tienes una cuenta registrada' , 1;
-	end 
+		IF EXISTS(SELECT 1 FROM USERS WHERE Correo = @Correo AND Tipo = 'Cliente')
+		begin 
+			throw 50001, 'Ya tienes una cuenta registrada' , 1;
+		end 
 
-	begin transaction;
+		begin transaction;
 
-	--2.insertamos al nuevo cliente '
-	insert into USERS(Correo, Password, Tipo, Estado)
-	values(@Correo, @Password, 'Cliente', 'Activo')
+		-- Insertamos al nuevo cliente '
+		insert into USERS(Correo, Password, Tipo, Estado)
+		values(@Correo, @Password, 'Cliente', 'Activo')
 
-	commit transaction;
+		-- no hacia commit en la tabla CLIENTES, entonces AGREGUE el insert:
+		DECLARE @UserID INT = SCOPE_IDENTITY();
+		insert into CLIENTES(UserID, Nombre, Apellido, Telefono)
+		values (@UserID, @Nombre, @Apellido, @Telefono);
+		-- AQUI TERMINA LO QUE AGREGUE
 
-	--confirmacion de exito 
-	select 'Cliente registrado existosamente. ' as Mnesaje, 
-	SCOPE_IDENTITY () as ClienteID;
+		commit transaction;
+
+		select 'Cliente registrado existosamente. ' as Mnesaje, 
+		@UserID as UserId; -- CAMBIADO : ClienteID -> UserID
 
 	end try 
 	begin catch 
