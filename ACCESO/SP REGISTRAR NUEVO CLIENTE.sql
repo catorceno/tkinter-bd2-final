@@ -32,8 +32,9 @@ BEGIN
 
 		commit transaction;
 
-		select 'Cliente registrado existosamente. ' as Mnesaje, 
-		@UserID as UserId; -- CAMBIADO : ClienteID -> UserID
+		SELECT
+			'Cliente registrado existosamente.' AS Mensaje,
+			@UserID AS UserID; -- CAMBIADO : ClienteID -> UserID
 
 	end try 
 	begin catch 

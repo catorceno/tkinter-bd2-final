@@ -1,13 +1,13 @@
 USE TkMarketplace
 GO
-select * from USERS
-select * from CLIENTES
+
 -- 3.Inicio Sesión
-CREATE PROCEDURE sp_inicioSesion
+ALTER PROCEDURE sp_inicioSesion
 @Correo   NVARCHAR(100),
 @Password NVARCHAR(200)
 AS
 BEGIN
+	SET NOCOUNT ON;
 	BEGIN TRY
 	BEGIN TRANSACTION
 		DECLARE @UserID INT;
